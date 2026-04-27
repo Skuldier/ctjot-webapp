@@ -602,7 +602,7 @@ def build_yaml(values: dict[str, Any]) -> str:
     }
 
     payload = {
-        "description": f"Jets of Time (local YAML editor) - {player_name}",
+        "description": f"Jets of Time - {player_name}",
         "name": player_name,
         "game": "Chrono Trigger Jets of Time",
         "Chrono Trigger Jets of Time": apworld_payload,
