@@ -1,0 +1,51 @@
+# Allowlist gitignore: block EVERYTHING at the workspace root by
+# default, then explicitly re-include only the files we want in the
+# deployment repo. This is the inverse of the more common blocklist
+# approach -- safer here because the workspace contains many
+# unrelated files (the Archipelago install, cjot-beta, screenshots,
+# personal YAMLs, lua helpers, internal design docs) that should
+# stay local.
+#
+# Pattern:
+#   /*           = match every top-level file and directory
+#   !/foo        = re-include the specific top-level item "foo"
+#   /*/          = also block subdirectories at root (belt + braces)
+#
+# Once a directory is re-included, files inside it follow normal
+# gitignore rules and are tracked by default.
+
+# Block all top-level files and directories.
+/*
+
+# Re-include only the deploy artifacts.
+!/.gitignore
+!/README.md
+!/render.yaml
+!/requirements.txt
+!/webapp/
+
+# --- Within webapp/, exclude developer cruft and runtime data ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local-only seed dumps from previous webapp builds. The deployed
+# app is stateless and never writes to webapp/seeds/; this directory
+# only exists locally from older runs.
+webapp/seeds/
+
+# --- Editor / OS ---
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# --- Logs ---
+*.log

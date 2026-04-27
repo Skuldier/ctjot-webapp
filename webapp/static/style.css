@@ -1,0 +1,576 @@
+/* =========================================================
+   Jets of Time - local generator
+   Styles modeled after beta.ctjot.com:
+     - Presets bar with color-coded cards
+     - Blue-bordered option panels with tab nav
+     - Pill-style ON/OFF toggles
+     - Purple-thumbed range sliders
+     - Character-assignment matrix with purple checkboxes
+   ========================================================= */
+
+:root {
+  --fg: #212529;
+  --bg: #ffffff;
+  --muted: #6c757d;
+  --border: #dee2e6;
+  --border-strong: #0d6efd;
+  --accent: #0d6efd;
+  --accent-dark: #0b5ed7;
+  --panel: #ffffff;
+  --toggle-on: #0d6efd;
+  --toggle-off-bg: #ffffff;
+  --toggle-off-border: #6c757d;
+  --slider-thumb: #a855f7;
+  --slider-track: #dee2e6;
+  --link: #0d6efd;
+
+  --preset-red:    #dc3545;
+  --preset-green:  #198754;
+  --preset-teal:   #20c997;
+  --preset-amber:  #f59e0b;
+  --preset-lw:     #212529; /* outlined black */
+  --preset-loc:    #198754;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Arial, sans-serif;
+  color: var(--fg);
+  background: var(--bg);
+  line-height: 1.45;
+  font-size: 15px;
+}
+
+main { max-width: 1080px; margin: 1rem auto 3rem; padding: 0 1rem; }
+
+/* ------- Page head ------- */
+.page-head h1 {
+  margin: 0; font-size: 2rem; font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.page-head .subtitle {
+  color: var(--fg); font-weight: 500; margin-top: 0.1rem;
+  font-size: 0.95rem;
+}
+
+/* ------- Presets ------- */
+.presets h2, .opts h2, .generate h2 {
+  font-size: 1.4rem; font-weight: 700; margin: 1.2rem 0 0.4rem;
+}
+
+.preset-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.4rem;
+  border: 1px solid var(--accent);
+  padding: 0.4rem;
+  border-radius: 2px;
+}
+
+.preset-card {
+  position: relative;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  padding: 0;
+  cursor: pointer;
+  font: inherit; color: inherit;
+  overflow: hidden;
+  transition: box-shadow 120ms ease;
+  display: flex; flex-direction: column;
+}
+.preset-card:hover { box-shadow: 0 0 0 2px rgba(13,110,253,0.35); }
+.preset-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.preset-title {
+  color: #fff; font-weight: 700; text-align: center;
+  padding: 0.3rem 0.25rem; font-size: 0.95rem;
+  border-bottom: 1px solid rgba(0,0,0,0.15);
+}
+.preset-desc  { padding: 0.4rem 0.5rem 0.15rem; font-size: 0.8rem; font-weight: 500; }
+.preset-bullets {
+  list-style: disc; margin: 0.1rem 0 0.4rem 1rem; padding: 0;
+  font-size: 0.75rem; line-height: 1.3;
+}
+
+/* Color variants */
+.preset-gato     .preset-title { background: var(--preset-red); }
+.preset-gato     .preset-bullets li { color: var(--preset-red); }
+.preset-prix     .preset-title { background: var(--preset-green); }
+.preset-prix     .preset-bullets li { color: var(--preset-green); }
+.preset-jurassic .preset-title { background: var(--preset-teal); }
+.preset-jurassic .preset-bullets li { color: var(--preset-teal); }
+.preset-catalack .preset-title { background: var(--preset-amber); }
+.preset-catalack .preset-bullets li { color: var(--preset-amber); }
+.preset-lw .preset-title, .preset-loc .preset-title {
+  background: transparent; color: #000; border-bottom: 1px solid var(--border);
+}
+.preset-lw .preset-title  { border: 1px solid #212529; }
+.preset-loc .preset-title { border: 1px solid var(--preset-loc); color: var(--preset-loc); }
+.preset-lw  .preset-bullets li { color: var(--accent); }
+.preset-loc .preset-bullets li { color: var(--preset-loc); }
+
+/* Full-width blue Reset All button */
+.btn-wide {
+  display: block; width: 100%;
+  margin: 0.6rem 0 0;
+  background: var(--accent); color: #fff;
+  border: 1px solid var(--accent-dark); border-radius: 2px;
+  padding: 0.5rem 0.75rem;
+  font: inherit; font-weight: 500; cursor: pointer;
+}
+.btn-wide:hover { background: var(--accent-dark); }
+
+/* ------- Options panel / tabs ------- */
+.opts { margin-top: 1rem; }
+
+.opts .help { color: var(--link); font-weight: 400; text-decoration: none; font-size: 1rem; }
+.opts .help:hover { text-decoration: underline; }
+
+.tabs {
+  display: flex; flex-wrap: wrap;
+  gap: 0;
+  margin-bottom: -1px;
+  position: relative; z-index: 2;
+}
+.tab {
+  background: transparent;
+  color: var(--link);
+  border: 1px solid transparent; border-bottom: none;
+  padding: 0.4rem 0.85rem;
+  font: inherit; font-size: 0.9rem;
+  cursor: pointer;
+  border-top-left-radius: 3px; border-top-right-radius: 3px;
+}
+.tab:hover { color: var(--accent-dark); }
+.tab.active {
+  background: #fff;
+  border-color: var(--accent);
+  color: var(--fg);
+  cursor: default;
+}
+
+.tab-panel {
+  display: none;
+  border: 1px solid var(--accent);
+  padding: 0.75rem 1rem;
+  border-radius: 2px;
+  position: relative; z-index: 1;
+}
+.tab-panel.active { display: block; }
+/* While a tooltip is showing, lift the panel's stacking context above
+   the tabs nav (z-index: 2) so the tooltip bubble isn't painted over
+   by the tab buttons. Cosmetic side effect during hover only: the
+   active tab's bottom edge briefly shows a 1px panel border. */
+.tab-panel.active:has(.tip-icon:hover) { z-index: 5; }
+
+/* ------- Fields, selects, text inputs ------- */
+.field { margin: 0.5rem 0; }
+.field label { display: block; font-weight: 500; margin-bottom: 0.2rem; font-size: 0.95rem; }
+.field select, .field input[type="text"], .field input[type="number"], .field input[type="file"] {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 0.35rem 0.5rem;
+  font: inherit;
+  background: #fff;
+}
+.field.inline {
+  display: flex; align-items: center; gap: 0.6rem; max-width: 320px;
+}
+.field.inline label { margin: 0; white-space: nowrap; }
+.field.inline input { flex: 1; }
+
+/* Two-column grid for paired fields / toggle columns */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem 1rem;
+}
+
+/* ------- Toggles: real sliding switch ------- */
+.toggle-list { display: flex; flex-direction: column; gap: 0.35rem; }
+.toggle {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  cursor: pointer; user-select: none;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: #fff;
+}
+.toggle > input { position: absolute; opacity: 0; pointer-events: none; }
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 22px;
+  flex-shrink: 0;
+  background: #e9ecef;
+  border: 1px solid var(--toggle-off-border);
+  border-radius: 22px;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.switch::before {
+  content: "OFF";
+  position: absolute;
+  top: 50%; right: 6px;
+  transform: translateY(-50%);
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.05em;
+  color: var(--toggle-off-border);
+  transition: opacity 120ms ease;
+}
+.switch-thumb {
+  position: absolute;
+  top: 1px; left: 1px;
+  width: 18px; height: 18px;
+  background: #fff;
+  border: 1px solid var(--toggle-off-border);
+  border-radius: 50%;
+  transition: left 140ms ease, background 140ms ease, border-color 140ms ease;
+}
+
+/* Checked / ON state */
+.toggle > input:checked ~ .switch {
+  background: var(--toggle-on);
+  border-color: var(--toggle-on);
+}
+.toggle > input:checked ~ .switch::before {
+  content: "ON";
+  color: #fff;
+  left: 7px; right: auto;
+}
+.toggle > input:checked ~ .switch .switch-thumb {
+  left: 25px;
+  border-color: var(--toggle-on);
+}
+
+/* Focus ring for keyboard users */
+.toggle > input:focus-visible ~ .switch {
+  box-shadow: 0 0 0 2px rgba(13,110,253,0.4);
+}
+
+.toggle-text { font-size: 0.9rem; }
+
+/* ------- Slider rows (tabs + mystery + bucket) ------- */
+.slider-row {
+  display: grid;
+  grid-template-columns: 180px 1fr 70px;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.25rem 0;
+}
+.slider-row label { font-size: 0.85rem; font-weight: 500; }
+.slider-row input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--slider-track);
+  border-radius: 2px;
+  outline: none;
+}
+.slider-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 16px; height: 16px;
+  background: var(--slider-thumb);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 1px solid #6f42c1;
+}
+.slider-row input[type="range"]::-moz-range-thumb {
+  width: 16px; height: 16px;
+  background: var(--slider-thumb);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 1px solid #6f42c1;
+}
+.slider-row input[type="number"],
+.slider-row input[type="text"] {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 0.2rem 0.4rem;
+  font: inherit;
+  text-align: center;
+}
+
+/* ------- Subsections ------- */
+.subsection-title {
+  font-size: 1.05rem; font-weight: 700;
+  margin: 0.8rem 0 0.2rem;
+}
+.subsection-label {
+  font-weight: 600;
+  margin: 0.6rem 0 0.2rem;
+  font-size: 0.9rem;
+}
+.subsection { margin-top: 0.4rem; }
+
+/* Toggles disabled by the current game mode (mirrors cjot-beta's
+   ForcedFlags). Greyed out so the user can see they're unavailable. */
+.toggle-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* ------- Hover tooltips ------- */
+.tip-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 0.4rem;
+  border-radius: 50%;
+  background: var(--border, #ccc);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: help;
+  position: relative;
+  flex-shrink: 0;
+}
+.tip-icon:hover {
+  background: var(--link, #1976d2);
+}
+/* Inside toggle rows, push the icon to the right edge of the rectangle. */
+.toggle .tip-icon { margin-left: auto; }
+.tip-icon::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.45rem 0.65rem;
+  background: #2c3338;
+  color: #f5f6f7;
+  font-weight: 400;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  border-radius: 4px;
+  white-space: normal;
+  width: max-content;
+  max-width: 280px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease, visibility 0.12s ease;
+  pointer-events: none;
+  z-index: 1000;
+}
+.tip-icon:hover::after { opacity: 1; visibility: visible; }
+/* Arrow under the bubble */
+.tip-icon::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 0px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #2c3338;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease, visibility 0.12s ease;
+  pointer-events: none;
+  z-index: 1000;
+}
+.tip-icon:hover::before { opacity: 1; visibility: visible; }
+
+/* ------- Character matrix ------- */
+.char-matrix {
+  border-collapse: collapse;
+  margin: 0.4rem 0;
+}
+.char-matrix th, .char-matrix td {
+  border: 1px solid var(--border);
+  padding: 0.35rem 0.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  background: #fff;
+}
+.char-matrix th {
+  font-weight: 600;
+  background: #f8f9fa;
+}
+.char-matrix input[type="checkbox"] {
+  accent-color: var(--slider-thumb);
+  width: 18px; height: 18px;
+  cursor: pointer;
+}
+.matrix-actions { display: flex; gap: 0.5rem; margin-top: 0.3rem; }
+.matrix-actions button {
+  border: 1px solid var(--border);
+  background: #fff; color: var(--link);
+  padding: 0.25rem 0.6rem;
+  border-radius: 2px;
+  font: inherit; cursor: pointer;
+}
+.matrix-actions button:hover { background: #f0f7ff; }
+
+/* ------- Objective rows ------- */
+.objective-row {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.2rem 0;
+}
+.objective-row label { font-size: 0.85rem; font-weight: 500; }
+.objective-row input[type="text"] {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 0.3rem 0.5rem;
+  font: inherit;
+  color: #7aa6cf;
+}
+
+/* ------- Generate section ------- */
+.generate {
+  margin-top: 1rem;
+  border: 1px solid var(--accent);
+  padding: 0.75rem 1rem;
+  border-radius: 2px;
+}
+.btn-primary {
+  background: var(--accent); color: #fff;
+  border: 1px solid var(--accent-dark); border-radius: 2px;
+  padding: 0.45rem 1rem;
+  font: inherit; font-weight: 500; cursor: pointer;
+  margin-top: 0.5rem;
+}
+.btn-primary:hover { background: var(--accent-dark); }
+
+/* ------- Misc ------- */
+.hint { color: var(--muted); font-size: 0.85rem; }
+code { background: #f1f3f5; padding: 0.05rem 0.3rem; border-radius: 2px; }
+.meta { display: grid; grid-template-columns: max-content 1fr; gap: 0.3rem 1rem; margin-bottom: 1rem; }
+.meta dt { color: var(--muted); }
+.meta dd { margin: 0; }
+.downloads { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.button { display: inline-block; padding: 0.45rem 1rem; border-radius: 2px; background: #e9ecef; color: var(--fg); text-decoration: none; border: 1px solid var(--border); cursor: pointer; }
+.button.primary { background: var(--accent); color: #fff; border-color: var(--accent-dark); }
+.button.primary:hover { background: var(--accent-dark); }
+.ap-instructions { border-left: 4px solid var(--accent); padding: 0.1rem 1rem; background: #f8f9fa; border-radius: 2px; }
+.error .detail { background: #212529; color: #f8f9fa; padding: 1rem; overflow: auto; border-radius: 2px; }
+
+.rebuild-stats {
+  margin-top: 0.8rem;
+  background: #f0f7ff;
+  border-left: 4px solid var(--accent);
+  padding: 0.5rem 1rem;
+  border-radius: 2px;
+}
+.rebuild-stats h4 { margin: 0 0 0.3rem; color: var(--accent-dark); }
+.rebuild-stats ul { margin: 0 0 0.5rem 1.1rem; }
+
+/* Responsive fallback */
+@media (max-width: 900px) {
+  .preset-row { grid-template-columns: repeat(3, 1fr); }
+  .two-col { grid-template-columns: 1fr; }
+  .slider-row { grid-template-columns: 160px 1fr 60px; }
+}
+@media (max-width: 600px) {
+  .preset-row { grid-template-columns: repeat(2, 1fr); }
+  .slider-row { grid-template-columns: 1fr; }
+}
+
+/* =========================================================
+   Dark mode
+   Triggered by `<html data-theme="dark">`. Set via the head
+   script in base.html (which reads localStorage / prefers-
+   color-scheme before render to avoid FOUC). Toggle button
+   updates the attribute + persists the choice.
+   ========================================================= */
+
+[data-theme="dark"] {
+  --fg:                  #e8eaed;
+  --bg:                  #0f1115;
+  --muted:               #95a0ad;
+  --border:              #2c3138;
+  --border-strong:       #5b9eff;
+  --accent:              #5b9eff;
+  --accent-dark:         #7eb0ff;
+  --panel:               #1a1d23;
+  --slider-track:        #2a2e36;
+  --link:                #5b9eff;
+  --toggle-off-bg:       #1a1d23;
+  --toggle-off-border:   #4a5260;
+}
+
+/* Specific overrides where the light theme hardcoded a color
+   instead of using a token. */
+[data-theme="dark"] body                       { background: var(--bg); }
+[data-theme="dark"] .preset-card               { background: var(--panel); color: var(--fg); }
+[data-theme="dark"] .preset-lw .preset-title,
+[data-theme="dark"] .preset-loc .preset-title  { color: var(--fg); }
+[data-theme="dark"] .preset-lw .preset-title   { border-color: var(--fg); }
+[data-theme="dark"] .tab.active                { background: var(--panel); }
+[data-theme="dark"] .field select,
+[data-theme="dark"] .field input[type="text"],
+[data-theme="dark"] .field input[type="number"],
+[data-theme="dark"] .field input[type="file"],
+[data-theme="dark"] .slider-row input[type="number"],
+[data-theme="dark"] .slider-row input[type="text"],
+[data-theme="dark"] .objective-row input[type="text"] {
+  background: var(--panel);
+  color: var(--fg);
+  border-color: var(--border);
+}
+[data-theme="dark"] .toggle                    { background: var(--panel); }
+[data-theme="dark"] .switch                    { background: var(--slider-track); }
+[data-theme="dark"] .switch-thumb              { background: var(--fg); border-color: var(--toggle-off-border); }
+[data-theme="dark"] .tip-icon                  { background: var(--toggle-off-border); }
+[data-theme="dark"] .char-matrix th,
+[data-theme="dark"] .char-matrix td            { background: var(--panel); color: var(--fg); }
+[data-theme="dark"] .char-matrix th            { background: #20242c; }
+[data-theme="dark"] .matrix-actions button     { background: var(--panel); }
+[data-theme="dark"] .matrix-actions button:hover { background: #20242c; }
+[data-theme="dark"] code                       { background: #2a2e36; }
+[data-theme="dark"] .button                    { background: #20242c; color: var(--fg); }
+[data-theme="dark"] .ap-instructions           { background: #1a1d23; }
+[data-theme="dark"] .rebuild-stats             { background: #14233a; }
+
+/* =========================================================
+   Theme toggle button (fixed top-right corner)
+   ========================================================= */
+
+.theme-toggle {
+  position: fixed;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 1000;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--fg);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: background 120ms ease, transform 120ms ease,
+              box-shadow 120ms ease, border-color 120ms ease;
+}
+.theme-toggle:hover {
+  transform: scale(1.06);
+  border-color: var(--accent);
+}
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.theme-toggle .theme-icon {
+  display: block;
+  font-size: 1rem;
+  line-height: 1;
+}
+[data-theme="dark"] .theme-toggle {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Chrono Trigger Jets of Time Randomizer{% endblock %}</title>
+  {# Theme detection: runs before stylesheet so the right palette
+     is in place before first paint (no flash of light theme on
+     dark-mode visitors). Reads localStorage first, falls back
+     to OS prefers-color-scheme. #}
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('ctjot-theme');
+        var prefersDark = window.matchMedia
+          && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var theme = saved || (prefersDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <button class="theme-toggle" type="button"
+          aria-label="Toggle dark mode"
+          title="Toggle dark mode">
+    <span class="theme-icon" aria-hidden="true">🌙</span>
+  </button>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <script>
+    (function () {
+      var btn = document.querySelector('.theme-toggle');
+      if (!btn) return;
+      var icon = btn.querySelector('.theme-icon');
+      function syncIcon() {
+        var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+        icon.textContent = dark ? '☀️' : '🌙';
+        btn.setAttribute(
+          'aria-label',
+          dark ? 'Switch to light mode' : 'Switch to dark mode'
+        );
+        btn.setAttribute(
+          'title',
+          dark ? 'Switch to light mode' : 'Switch to dark mode'
+        );
+      }
+      syncIcon();
+      btn.addEventListener('click', function () {
+        var current = document.documentElement.getAttribute('data-theme');
+        var next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try { localStorage.setItem('ctjot-theme', next); } catch (e) { /* ignore */ }
+        syncIcon();
+      });
+    })();
+  </script>
+</body>
+</html>

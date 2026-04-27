@@ -1,0 +1,26 @@
+# Render service definition for the Jets of Time YAML editor.
+# Pushed to GitHub; Render reads this on each deploy.
+#
+# To deploy:
+#   1. Connect this repo to Render via GitHub OAuth.
+#   2. Render auto-detects this file and creates the service.
+#   3. Each subsequent push to `main` redeploys.
+services:
+  - type: web
+    name: ctjot-webapp
+    runtime: python
+    plan: free
+    region: oregon
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn webapp.app:app -b 0.0.0.0:$PORT --workers 2 --timeout 30 --access-logfile - --error-logfile -
+    healthCheckPath: /healthz
+    envVars:
+      - key: CTJOT_DEBUG
+        value: "0"
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      # SECRET_KEY is needed by Flask-WTF for CSRF; Render generates a
+      # secure value automatically when generateValue is true.
+      - key: FLASK_SECRET_KEY
+        generateValue: true

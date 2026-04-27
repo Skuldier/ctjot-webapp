@@ -1,0 +1,515 @@
+{% extends "base.html" %}
+{% block title %}Chrono Trigger Jets of Time Randomizer{% endblock %}
+{% block content %}
+{% macro toggle(name, label, on=False, tip='') -%}
+  <label class="toggle">
+    <input type="checkbox" name="{{ name }}" value="1"{% if on %} checked{% endif %}>
+    <span class="switch" aria-hidden="true">
+      <span class="switch-thumb"></span>
+    </span>
+    <span class="toggle-text">{{ label }}</span>
+    {% if tip %}<span class="tip-icon" data-tip="{{ tip }}" aria-label="info">?</span>{% endif %}
+  </label>
+{%- endmacro %}
+<section class="page-head">
+  <h1>Chrono Trigger Jets of Time Randomizer</h1>
+  <div class="subtitle">Version 3.3.0 Beta &mdash; local generator</div>
+</section>
+
+<section class="presets">
+  <h2>Presets</h2>
+  <div class="preset-row">
+    <button type="button" class="preset-card preset-gato"     data-preset="gato">
+      <div class="preset-title">Gato Cup</div>
+      <div class="preset-desc">This flagset is designed for new players.</div>
+      <ul class="preset-bullets">
+        <li>Goal: Defeat Lavos or Zeal</li>
+        <li>Easy item difficulty</li>
+        <li>Magic is unlocked</li>
+        <li>Free menu glitch</li>
+        <li>Improved tabs</li>
+      </ul>
+    </button>
+    <button type="button" class="preset-card preset-prix"     data-preset="prix">
+      <div class="preset-title">Millennial Prix</div>
+      <div class="preset-desc">League standard race flags.</div>
+      <ul class="preset-bullets">
+        <li>Goal: Defeat Lavos or Zeal</li>
+        <li>Normal item difficulty</li>
+        <li>Magic is locked</li>
+      </ul>
+    </button>
+    <button type="button" class="preset-card preset-jurassic" data-preset="jurassic">
+      <div class="preset-title">Jurassic Rhythm</div>
+      <div class="preset-desc">Jurassic Rhythm event flags.</div>
+      <ul class="preset-bullets">
+        <li>Goal: Defeat Lavos or Zeal</li>
+        <li>Normal item difficulty</li>
+        <li>Magic is locked</li>
+      </ul>
+    </button>
+    <button type="button" class="preset-card preset-catalack" data-preset="catalack">
+      <div class="preset-title">Catalack Top 8</div>
+      <div class="preset-desc">Tournament "Top 8" flags.</div>
+      <ul class="preset-bullets">
+        <li>Goal: Defeat Lavos or Zeal</li>
+        <li>Hard item difficulty</li>
+        <li>Gear and Healing Items randomized</li>
+        <li>Magic is locked</li>
+      </ul>
+    </button>
+    <button type="button" class="preset-card preset-lw"       data-preset="lw">
+      <div class="preset-title">Lost Worlds</div>
+      <div class="preset-desc">A special game mode in which 1000AD and 600AD are not available.</div>
+      <ul class="preset-bullets">
+        <li>Goal: Defeat Lavos or Zeal</li>
+        <li>Magic is unlocked</li>
+      </ul>
+    </button>
+    <button type="button" class="preset-card preset-loc"      data-preset="loc">
+      <div class="preset-title">Legacy of Cyrus</div>
+      <div class="preset-desc">A special game mode celebrating Frog, Magus, and Cyrus.</div>
+      <ul class="preset-bullets">
+        <li>Goal: Defeat Ozzie in Ozzie's Fort</li>
+        <li>Frog &amp; Magus must be recruited</li>
+        <li>Magic is unlocked</li>
+      </ul>
+    </button>
+  </div>
+  <button type="button" id="reset-all" class="btn-wide">Reset All</button>
+</section>
+
+<form id="gen-form" method="POST" action="{{ url_for('generate') }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+<section class="opts">
+  <h2>Select Game Options <a href="https://www.wiki.ctjot.com/" class="help" target="_blank" rel="noopener noreferrer" title="Opens the Jets of Time wiki in a new tab">(help)</a></h2>
+
+  <nav class="tabs" role="tablist">
+    <button type="button" class="tab active" data-tab="General"        role="tab">General</button>
+    <button type="button" class="tab"        data-tab="Tabs"           role="tab">Tabs</button>
+    <button type="button" class="tab"        data-tab="Character Rando"role="tab">Character Rando</button>
+    <button type="button" class="tab"        data-tab="Boss Rando"     role="tab">Boss Rando</button>
+    <button type="button" class="tab"        data-tab="Quality of Life"role="tab">Quality of Life</button>
+    <button type="button" class="tab"        data-tab="Extra"          role="tab">Extra</button>
+    <button type="button" class="tab"        data-tab="Mystery"        role="tab">Mystery</button>
+    <button type="button" class="tab"        data-tab="Bucket"         role="tab">Bucket</button>
+    <button type="button" class="tab"        data-tab="Cosmetic"       role="tab">Cosmetic</button>
+    <button type="button" class="tab"        data-tab="Character Names"role="tab">Character Names</button>
+    <button type="button" class="tab"        data-tab="Local"          role="tab">Multiworld</button>
+  </nav>
+
+  {# ------------- General ------------- #}
+  <div class="tab-panel active" data-panel="General">
+    <div class="field">
+      <label for="game-mode">Game Mode: <span class="tip-icon" data-tip="Game ruleset. Standard: full vanilla geography. Lost Worlds: no 1000/600 AD. Ice Age: 1000 AD frozen over. Legacy of Cyrus: Frog/Magus/Cyrus focus. Vanilla Rando: vanilla locations, randomized contents.">?</span></label>
+      <select name="game-mode" id="game-mode">
+        {% for v,d in [('std','Standard'),('lw','Lost Worlds'),('ia','Ice Age'),('loc','Legacy of Cyrus'),('van','Vanilla Rando')] %}
+          <option value="{{ v }}">{{ d }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="two-col">
+      <div class="field">
+        <label for="enemy-difficulty">Enemy Difficulty: <span class="tip-icon" data-tip="Normal (default) or Hard - Hard provides a buff to enemy stats.">?</span></label>
+        <select name="enemy-difficulty" id="enemy-difficulty">
+          <option value="normal">Normal</option><option value="hard">Hard</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="item-difficulty">Item Difficulty: <span class="tip-icon" data-tip="Changes the amount and quality of loot dropped from enemies and chests.">?</span></label>
+        <select name="item-difficulty" id="item-difficulty">
+          <option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="hard">Hard</option>
+        </select>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="toggle-list">
+        {{ toggle('disable-glitches', 'Disable Glitches', True,
+            tip='Removes the ability to use most glitches used in vanilla speedruns.') }}
+        {{ toggle('boss-scaling',     'Boss Scaling',
+            tip='Bosses that block progression items are buffed. Only meaningful in Standard mode without Chronosanity.') }}
+        {{ toggle('early-pendant',    'Early Pendant Charge',
+            tip='Rather than heading to Zeal, the pendant becomes charged upon finishing the Trial.') }}
+        {{ toggle('unlocked-magic',   'Unlocked Magic',
+            tip='Characters learn all their techs without needing to visit Spekkio. Forced on in Lost Worlds / Ice Age / Legacy of Cyrus.') }}
+        {{ toggle('chronosanity',     'Chronosanity',
+            tip='Enables the Chronosanity category: key items can be placed in ANY treasure chest instead of the canonical KI slots. Mutually exclusive with Boss Scaling.') }}
+        {{ toggle('randomize-healing','Randomize Healing Items',
+            tip='Randomizes the efficacy and/or effect of healing items. Identify items in the menu to see the real strength.') }}
+        {{ toggle('mystery-seed',     'Mystery Seed',
+            tip='Generates a seed with randomized flags. Each flag is rolled per the probabilities on the Mystery tab; the resulting flag set is hidden until you finish the seed.') }}
+      </div>
+      <div class="toggle-list">
+        {{ toggle('randomize-bosses',    'Randomize Bosses',
+            tip='Shuffles most bosses with slight buffs/nerfs to fit their new spot.') }}
+        {{ toggle('zeal-2-last',         'Zeal 2 Counts As Last Boss',
+            tip='Defeating Zeal 2 at the end of Black Omen counts as the win condition.') }}
+        {{ toggle('locked-characters',   'Locked Characters',
+            tip='The characters at Dactyl Nest and Proto Dome are made harder to unlock.') }}
+        {{ toggle('make-tabs',           'Make all treasures tabs',
+            tip='All items in chests are replaced by tabs.') }}
+        {{ toggle('randomize-characters','Randomize Characters',
+            tip='Shuffles which character appears at which recruit spot. Off = vanilla cjot-beta placements; on = layer-1 shuffle. Pair with Duplicate Characters for full model/palette swap.') }}
+        {{ toggle('randomize-gear',      'Randomize Gear',
+            tip='Randomizes the numbers and extra effects on equipped items.') }}
+        {{ toggle('epoch-fail',          'Epoch Fail',
+            tip='The Epoch begins in 1000 AD without wings initially. Adds the JetsOfTime KI (held by Dalton) which restores flight.') }}
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="field">
+        <label for="shop-prices">Shop Prices: <span class="tip-icon" data-tip="Normal (vanilla prices), Free (every item 0G), Mostly Random (random within bounds), or Fully Random pricing.">?</span></label>
+        <select name="shop-prices" id="shop-prices">
+          <option value="normal" selected>Normal</option><option value="random">Fully Random</option>
+          <option value="mostrandom">Mostly Random</option><option value="free">Free</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="tech-randomization">Tech Randomization: <span class="tip-icon" data-tip="Normal (vanilla tech order), Fully Random, or Balanced Random tech order.">?</span></label>
+        <select name="tech-randomization" id="tech-randomization">
+          <option value="normal" selected>Normal</option>
+          <option value="balanced">Balanced Random</option>
+          <option value="random">Random</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  {# ------------- Tabs ------------- #}
+  <div class="tab-panel" data-panel="Tabs">
+    {% for name, label, default in [
+      ('power-tab-min','Power Tab Min',1),('power-tab-max','Power Tab Max',1),
+      ('magic-tab-min','Magic Tab Min',1),('magic-tab-max','Magic Tab Max',1),
+      ('speed-tab-min','Speed Tab Min',1),('speed-tab-max','Speed Tab Max',1)] %}
+      <div class="slider-row">
+        <label for="{{ name }}">{{ label }}:</label>
+        <input type="range" min="1" max="9" value="{{ default }}" name="{{ name }}" id="{{ name }}">
+        <input type="number" min="1" max="9" value="{{ default }}" data-mirror="{{ name }}">
+      </div>
+    {% endfor %}
+  </div>
+
+  {# ------------- Character Rando ------------- #}
+  <div class="tab-panel" data-panel="Character Rando">
+    <div class="toggle-list">
+      {{ toggle('duplicate-characters','Duplicate Characters',
+          tip='Allow the same character to appear at multiple recruit spots (e.g., two Robos in your party). Auto-enables Character Rando layer-2 model/palette swap.') }}
+      {{ toggle('duplicate-dual-techs','Duplicate Dual Techs',
+          tip='When two of the same character are in your party, they can perform dual techs together. Requires Duplicate Characters.') }}
+    </div>
+    <div class="subsection">
+      <div class="subsection-title">Select which character identities can be assigned which character models:</div>
+      <table class="char-matrix">
+        <thead>
+          <tr>
+            <th></th>
+            {% for pc in ['Crono','Marle','Lucca','Robo','Frog','Ayla','Magus'] %}<th>{{ pc }}</th>{% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in ['crono','marle','lucca','robo','frog','ayla','magus'] %}
+            <tr>
+              <th>{{ row|capitalize }} can be:</th>
+              {% for col in ['crono','marle','lucca','robo','frog','ayla','magus'] %}
+                <td>
+                  <input type="checkbox"
+                         name="{{ row }}-can-be"
+                         value="{{ col }}"
+                         checked
+                         class="char-matrix-box">
+                </td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div class="matrix-actions">
+        <button type="button" id="matrix-check-all">Check All</button>
+        <button type="button" id="matrix-uncheck-all">Uncheck All</button>
+      </div>
+    </div>
+  </div>
+
+  {# ------------- Boss Rando ------------- #}
+  <div class="tab-panel" data-panel="Boss Rando">
+    <div class="toggle-list">
+      {{ toggle('legacy-boss-placement','Legacy Boss Placement',
+          tip='Forces bosses back into legacy placements.') }}
+      {{ toggle('boss-spot-hps',        'Boss Spot HPs',
+          tip='Changes boss HP values to fixed numbers based on location.') }}
+    </div>
+  </div>
+
+  {# ------------- Quality of Life ------------- #}
+  <div class="tab-panel" data-panel="Quality of Life">
+    <div class="toggle-list">
+      {{ toggle('sightscope-always-on','Sightscope Always On',
+          tip='Always view enemy HP as if a Sightscope were equipped.') }}
+      {{ toggle('boss-sightscope',     'Boss Sightscope',
+          tip='Peek at boss HP with the Sightscope effect.') }}
+      {{ toggle('fast-tabs',           'Fast Tabs', True,
+          tip='Move immediately after picking up a Tab (no field animation lock).') }}
+      {{ toggle('free-menu-glitch',    'Free Menu Glitch',
+          tip='Extends menu glitch windows to make them easier to achieve.') }}
+      {{ toggle('visible-techlist',    'Visible Techlist',
+          tip='All techs are visible in the menu, including ones a character has not yet learned. Helps planning, no balance impact.') }}
+      {{ toggle('ap-classification-markers','AP Classification Markers (red=trap / purple=prog / blue=useful / brown=filler)', True,
+          tip="Above every chest, draw a colored NPC marker keyed to the AP item placed there. Other-slot items are colored from that slot's perspective.") }}
+    </div>
+  </div>
+
+  {# ------------- Extra (includes Logic Tweaks) ------------- #}
+  <div class="tab-panel" data-panel="Extra">
+    <div class="two-col">
+      <div class="toggle-list">
+        {{ toggle('bucket-list',      'Bucket List',
+            tip='Enables Objectives as an alternate route to Lavos. Players configure a set of objectives (Bucket tab) which unlock the bucket at the End of Time.') }}
+        {{ toggle('starters-sufficient','Starters Sufficient',
+            tip='Ensures Black Omen and Ocean Palace can be completed with only the starting characters.') }}
+        {{ toggle('tech-damage-rando','Tech Damage Rando',
+            tip='Shuffles power values between all player character techs.') }}
+        {{ toggle('element-rando',    'Element Rando',
+            tip='Shuffles elemental assignments amongst player characters.') }}
+      </div>
+      <div class="toggle-list">
+        {{ toggle('tackle-on-hit','Tackle On-Hit Effects',
+            tip="Allows Robo's Tackle technique to gain weapon on-hit effects.") }}
+        {{ toggle('use-anti-life','Use Anti-Life',
+            tip="Replaces Black Hole with Anti-Life in Magus's tech list.") }}
+      </div>
+    </div>
+    <h3 class="subsection-title">Logic Tweaks</h3>
+    <div class="subsection-label">Flags that Add a Key Item:</div>
+    <div class="two-col">
+      <div class="toggle-list">{{ toggle('restore-johnny-race','Restore Johnny Race',
+          tip='Adds Johnny back to Lab 32. Foot access to Lab 32 is blocked without the Bike Key (new KI).') }}</div>
+      <div class="toggle-list">{{ toggle('restore-tools',      'Restore Tools',
+          tip='Adds Tools back to the KI pool as a requirement for fixing Northern Ruins.') }}</div>
+    </div>
+    <div class="subsection-label">Flags that Add/Remove a Key Item Spot:</div>
+    <div class="two-col">
+      <div class="toggle-list">
+        {{ toggle('add-bekkler-spot',     'Add Bekkler Spot',
+            tip='The clone game in the Millennial Fair becomes a KI spot. Upon obtaining the C. Trigger, Bekkler offers a random KI for playing the clone game.') }}
+        {{ toggle('add-cyrus-grave-spot', 'Add Cyrus Grave Spot',
+            tip="Talking to Cyrus's grave with Frog rewards a KI instead of giving Frog a stat boost.") }}
+        {{ toggle('add-ozzie-fort-spot',  "Add Ozzie's Fort Spot",
+            tip="Adds a KI to Ozzie's Fort after the cat drop.") }}
+      </div>
+      <div class="toggle-list">
+        {{ toggle('add-race-log-spot',      'Add Race Log Spot',
+            tip='Puts a KI into the vanilla Race Log chest. Designed to be used with Restore Johnny Race.') }}
+        {{ toggle('vanilla-robo-ribbon',    'Vanilla Robo Ribbon',
+            tip="Removes RoboRibbon as a KI. Adds the vanilla Atropos's ribbon buff after defeating Atropos.") }}
+        {{ toggle('remove-black-omen-spot', 'Remove Black Omen Spot',
+            tip='Removes Black Omen-internal spots from the KI pool. Excludes a chunk of late game from KI shuffling.') }}
+      </div>
+    </div>
+    <div class="subsection-label">Flags that are Spot-Neutral:</div>
+    <div class="two-col">
+      <div class="toggle-list">
+        {{ toggle('add-sun-keep-spot','Add Sun Keep Spot',
+            tip='The Sun Keep in 2300 becomes a KI spot. The Moon Stone charges into a random item; the Sun Stone is obtainable independent of the Moon Stone.') }}
+        {{ toggle('split-arris-dome', 'Split Arris Dome',
+            tip='Adds the Seed to the KI pool and a KI spot to the corpse in the Arris Dome food locker.') }}
+        {{ toggle('vanilla-desert',   'Vanilla Desert',
+            tip='Requires talking to the plant lady in Zeal palace to get the Sunken Desert to appear.') }}
+      </div>
+      <div class="toggle-list">
+        {{ toggle('unlocked-skyways','Unlocked Skyways',
+            tip='Skygates are open as soon as the Dark Ages are reached. If Epoch Fail is selected, also moves the Jets turn-in to The Blackbird Dock. Forced on by Rocksanity.') }}
+        {{ toggle('rocksanity',      'Rocksanity',
+            tip='Rocks are added to the KI pool and rock locations will yield a KI.') }}
+      </div>
+    </div>
+  </div>
+
+  {# ------------- Mystery ------------- #}
+  <div class="tab-panel" data-panel="Mystery">
+    {% macro mystery_group(title, items, suffix='') %}
+      <h3 class="subsection-title">{{ title }}:</h3>
+      {% for name, label, default, vmin, vmax in items %}
+        <div class="slider-row">
+          <label for="{{ name }}">{{ label }}:</label>
+          <input type="range" min="{{ vmin }}" max="{{ vmax }}" value="{{ default }}" name="{{ name }}" id="{{ name }}">
+          <input type="text" value="{{ default }}{{ suffix }}" data-mirror="{{ name }}" data-suffix="{{ suffix }}">
+        </div>
+      {% endfor %}
+    {% endmacro %}
+    {{ mystery_group('Game Modes', [
+        ('mystery-mode-std','Standard',75,0,100),
+        ('mystery-mode-lw','Lost Worlds',25,0,100),
+        ('mystery-mode-loc','Legacy of Cyrus',0,0,100),
+        ('mystery-mode-ia','Ice Age',0,0,100),
+        ('mystery-mode-van','Vanilla Rando',0,0,100),
+    ]) }}
+    {{ mystery_group('Item Difficulty', [
+        ('mystery-item-easy','Easy',15,0,100),
+        ('mystery-item-norm','Normal',70,0,100),
+        ('mystery-item-hard','Hard',15,0,100),
+    ]) }}
+    {{ mystery_group('Enemy Difficulty', [
+        ('mystery-enemy-norm','Normal',75,0,100),
+        ('mystery-enemy-hard','Hard',25,0,100),
+    ]) }}
+    {{ mystery_group('Tech Order', [
+        ('mystery-tech-norm','Normal',10,0,100),
+        ('mystery-tech-rand','Full Random',80,0,100),
+        ('mystery-tech-balanced','Balanced Random',10,0,100),
+    ]) }}
+    {{ mystery_group('Shop Prices', [
+        ('mystery-prices-norm','Normal',70,0,100),
+        ('mystery-prices-rand','Random',10,0,100),
+        ('mystery-prices-mostly-rand','Mostly Random',10,0,100),
+        ('mystery-prices-free','Free',10,0,100),
+    ]) }}
+    <h3 class="subsection-title">Flag Probabilities:</h3>
+    {% for name, label, default in [
+        ('mystery-flag-tab-treasures','Tab Treasures',0.10),
+        ('mystery-flag-unlocked-magic','Unlocked Magic',0.50),
+        ('mystery-flag-bucket-list','Bucket List',0.15),
+        ('mystery-flag-chronosanity','Chronosanity',0.50),
+        ('mystery-flag-boss-rando','Boss Rando',0.50),
+        ('mystery-flag-boss-scaling','Boss Scaling',0.10),
+        ('mystery-flag-locked-chars','Locked Characters',0.25),
+        ('mystery-flag-char-rando','Character Rando',0.50),
+        ('mystery-flag-duplicate-chars','Duplicate Characters',0.25),
+        ('mystery-flag-epoch-fail','Epoch Fail',0.50),
+        ('mystery-flag-gear-rando','Gear Rando',0.25),
+        ('mystery-flag-heal-rando','Heal Rando',0.25),
+    ] %}
+      <div class="slider-row">
+        <label for="{{ name }}">{{ label }}:</label>
+        <input type="range" min="0" max="100" value="{{ (default*100)|int }}" data-prob-pct="{{ name }}">
+        <input type="hidden" name="{{ name }}" value="{{ default }}">
+        <input type="text" value="{{ (default*100)|int }}%" data-mirror-prob="{{ name }}">
+      </div>
+    {% endfor %}
+  </div>
+
+  {# ------------- Bucket ------------- #}
+  <div class="tab-panel" data-panel="Bucket">
+    <div class="slider-row">
+      <label for="num-objectives">Number of Objectives: <span class="tip-icon" data-tip="How many objective slots are active for this seed. Each one becomes a row below. Cap is 8.">?</span></label>
+      <input type="range" min="1" max="8" value="5" name="num-objectives" id="num-objectives">
+      <input type="number" min="1" max="8" value="5" data-mirror="num-objectives">
+    </div>
+    <div class="slider-row">
+      <label for="num-required">Number Required: <span class="tip-icon" data-tip="How many of the configured objectives the player must complete to satisfy the bucket goal. Cannot exceed Number of Objectives.">?</span></label>
+      <input type="range" min="1" max="8" value="5" name="num-required" id="num-required">
+      <input type="number" min="1" max="8" value="5" data-mirror="num-required">
+    </div>
+    {% set objective_presets = [
+      'Random','Random Gated Quest','Random Hard Quest','Random Go Mode Quest',
+      'Random Gated Character Recruit','Random Boss (Includes Go Mode Dungeons)',
+      'Random Boss from Go Mode Dungeon','Random Boss (No Go Mode Dungeons)',
+      'Recruit 3 Characters (Total 5)','Recruit 4 Characters (Total 6)',
+      'Recruit 5 Characters (Total 7)','Collect 10 of 20 Fragments',
+      'Collect 10 of 30 Fragments','Collect 3 Rocks','Collect 4 Rocks',
+      'Collect 5 Rocks','Forge the Masamune','Charge the Moonstone',
+      'Trade the Jerky Away','Defeat the Arris Dome Boss',
+      "Visit Cyrus's Grave with Frog","Defeat the Boss of Death's Peak",
+      'Defeat the Boss of Denadoro Mountains','Gain Epoch Flight',
+      'Defeat the Boss of the Factory Ruins','Defeat the Boss of the Geno Dome',
+      "Defeat the Boss of the Giant's Claw","Defeat the Boss of Heckran's Cave",
+      "Defeat the Boss of the King's Trial",
+      'Defeat the Boss of Manoria Cathedral','Defeat the Boss of Mount Woe',
+      'Defeat the Boss of the Pendant Trial','Defeat the Boss of the Reptite Lair',
+      'Defeat the Boss of the Sun Palace','Defeat the Boss of the Sunken Desert',
+      'Defeat the Boss in the Zeal Throneroom','Defeat the Boss of Zenan Bridge',
+      'Defeat the Black Tyrano','Defeat the Tyrano Lair Midboss',
+      "Defeat the Boss in Flea's Spot","Defeat the Boss in Slash's Spot",
+      "Defeat Magus in Magus's Castle",'Defeat the Boss in the GigaMutant Spot',
+      'Defeat the Boss in the TerraMutant Spot','Defeat the Boss in the ElderSpawn Spot',
+      'Defeat the Boss in the Twin Golem Spot','Beat Johnny in a Race',
+      'Bet on a Fair Race and Win','Play the Fair Drinking Game',
+      'Defeat AtroposXR','Defeat DaltonPlus','Defeat DragonTank','Defeat ElderSpawn',
+      'Defeat Flea','Defeat Flea Plus','Defeat Giga Gaia','Defeat GigaMutant',
+      'Defeat Golem','Defeat Golem Boss','Defeat Guardian','Defeat Heckran',
+      'Defeat LavosSpawn','Defeat Magus (North Cape)','Defeat Masamune',
+      'Defeat Mother Brain','Defeat Mud Imp','Defeat Nizbel','Defeat Nizbel II',
+      'Defeat R-Series','Defeat Retinite','Defeat RustTyrano','Defeat Slash',
+      'Defeat Son of Sun','Defeat Super Slash','Defeat TerraMutant',
+      'Defeat Yakra','Defeat Yakra XIII','Defeat Zombor'
+    ] %}
+    <datalist id="objective-presets">
+      {% for p in objective_presets %}<option value="{{ p }}">{% endfor %}
+    </datalist>
+    {% for i in range(1,9) %}
+      <div class="objective-row">
+        <label for="objective-{{ i }}">Objective {{ i }}</label>
+        <input type="text" name="objective-{{ i }}" id="objective-{{ i }}"
+               list="objective-presets"
+               placeholder="Start typing or hit the down arrow for presets">
+      </div>
+    {% endfor %}
+    <div class="toggle-list">
+      {{ toggle('disable-other-go-modes','Disable Other Go Modes',
+          tip='Lavos and Zeal stop counting as game-end conditions: only the bucket goal can complete the seed. Forces bucket-only routing.') }}
+      {{ toggle('objectives-auto-win',   'Objectives Auto-Win',
+          tip='Completing the required number of objectives ends the game immediately, instead of unlocking the End-of-Time bucket portal.') }}
+    </div>
+  </div>
+
+  {# ------------- Cosmetic ------------- #}
+  <div class="tab-panel" data-panel="Cosmetic">
+    <div class="toggle-list">
+      {{ toggle('autorun',             'Auto-run (run button walks)',
+          tip='Move at run speed by default; walk when the run button is held.') }}
+      {{ toggle('quiet-mode',          'Quiet Mode',
+          tip='Turns off music entirely.') }}
+      {{ toggle('reduce-flash',        'Reduce Flashing',
+          tip='Removes or dampens screen-flash effects (Lavos transitions, certain spells). Photosensitivity accommodation.') }}
+      {{ toggle('death-peak-alt-music','Death Peak Alt Music',
+          tip='Replaces the default theme with the unused Singing Mountain track.') }}
+      {{ toggle('zenan-alt-music',     'Zenan Alt Music',
+          tip='Replaces the default battle theme with the unreleased Battle 2 track.') }}
+    </div>
+  </div>
+
+  {# ------------- Character Names ------------- #}
+  <div class="tab-panel" data-panel="Character Names">
+    <p class="hint">Max 5 characters per name (beta limit).</p>
+    {% for pc in ['crono','marle','lucca','robo','frog','ayla','magus','epoch'] %}
+      <div class="field inline">
+        <label for="{{ pc }}-name">{{ pc|capitalize }} name:</label>
+        <input type="text" name="{{ pc }}-name" id="{{ pc }}-name" maxlength="5" value="{{ pc|capitalize }}">
+      </div>
+    {% endfor %}
+  </div>
+
+  {# ------------- Multiworld ------------- #}
+  <div class="tab-panel" data-panel="Local">
+    <div class="field">
+      <label for="player-name">Player Name (multiworld slot):</label>
+      <input type="text" name="player-name" id="player-name" value="Player1" maxlength="16">
+    </div>
+
+    <div class="field">
+      <label for="accessibility">Accessibility: <span class="tip-icon" data-tip="Sets rules for reachability of your items/locations. Full: ensure everything can be reached and acquired. Minimal: ensure only what is needed to reach your goal can be acquired.">?</span></label>
+      <select name="accessibility" id="accessibility">
+        <option value="full" selected>Full</option><option value="minimal">Minimal</option>
+      </select>
+    </div>
+
+    <div class="slider-row">
+      <label for="progression-balancing">Progression Balancing: <span class="tip-icon" data-tip="Algorithm for moving progression items into earlier spheres to prevent getting stuck or bored early. A lower setting means more getting stuck; a higher setting means less. 0 = disabled, 50 = normal (default), 99 = extreme.">?</span></label>
+      <input type="range" min="0" max="99" value="50" name="progression-balancing" id="progression-balancing">
+      <input type="number" min="0" max="99" value="50" data-mirror="progression-balancing">
+    </div>
+
+    <div class="toggle-list">
+      {{ toggle('priority-ki-locations', 'Prioritize Key Item Locations',
+          tip="Marks every Key Item spot in this seed as a priority location. AP's Fill forces progression items onto priority locations first. Useful when your slot has few checks -- guarantees the checks you do have hold meaningful items.") }}
+    </div>
+
+    <section class="generate">
+      <button type="submit" class="btn-primary">Generate YAML</button>
+    </section>
+  </div>
+</section>
+</form>
+
+<script src="{{ url_for('static', filename='options.js') }}"></script>
+{% endblock %}

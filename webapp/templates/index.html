@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Chrono Trigger Jets of Time Randomizer{% endblock %}
+{% block content %}
+<section class="page-head">
+  <h1>Chrono Trigger Jets of Time Randomizer</h1>
+  <div class="subtitle">YAML editor for the Archipelago <code>ctjot</code> apworld</div>
+</section>
+<p>
+  Build an Archipelago YAML for Jets of Time through a friendly form
+  instead of hand-editing the apworld's option fields. Pick your
+  flags, click <em>Generate YAML</em>, and download the resulting
+  <code>.yaml</code>.
+</p>
+<p>
+  <a class="button primary" href="{{ multiworld_url }}">Generate a YAML</a>
+</p>
+{% endblock %}
