@@ -468,20 +468,62 @@
       Weights don't need to sum to 100; cjot-beta normalizes them.
       Default is equal weight (10) across all 7 categories.
     </p>
+    {#
+      Each row: (form-suffix, label, default-enabled, tip)
+      Grouped into visual sections via the 'group' tuple at index 0.
+      Default-enabled categories preserve the v1 default (7 main random
+      categories on); specific objectives (rocks/fragments/recruit-N)
+      are off by default so existing seeds don't change behavior.
+    #}
+    {% set _groups = [
+      ('Quest categories (random-pull)', [
+        ('quest-gated',   'Gated Quest',     true,
+         'Pulls from gated quest objectives (story-driven content the rando placed behind a key-item gate).'),
+        ('quest-late',    'Hard Quest',      true,
+         'Pulls from late-game quests (typically high-difficulty endgame content).'),
+        ('quest-go',      'Go Mode Quest',   true,
+         'Pulls from quests in go-mode dungeons (the path to Lavos for the seed).'),
+      ]),
+      ('Recruit', [
+        ('recruit',       'Gated Recruit',   true,
+         'Pulls from character-recruit objectives (recruit X from gated location).'),
+        ('recruit-3',     'Recruit 3 Characters (Total 5)', false,
+         'Specific objective: recruit 3 of the gated characters (total party of 5).'),
+        ('recruit-4',     'Recruit 4 Characters (Total 6)', false,
+         'Specific objective: recruit 4 of the gated characters (total party of 6).'),
+        ('recruit-5',     'Recruit 5 Characters (Total 7)', false,
+         'Specific objective: recruit all 5 gated characters (total party of 7).'),
+      ]),
+      ('Boss categories (random-pull)', [
+        ('boss-any',      'Any Boss',        true,
+         'Pulls from any boss across the world, including go-mode dungeons.'),
+        ('boss-go',       'Go Mode Boss',    true,
+         'Pulls from bosses inside go-mode dungeons only.'),
+        ('boss-nogo',     'Non-Go Boss',     true,
+         'Pulls from bosses outside go-mode dungeons.'),
+      ]),
+      ('Rock collection (Rocksanity required)', [
+        ('collect-3-rocks', 'Collect 3 Rocks', false,
+         'Specific objective: collect any 3 of the 5 rocks. Requires Rocksanity for the rocks to be findable.'),
+        ('collect-4-rocks', 'Collect 4 Rocks', false,
+         'Specific objective: collect any 4 of the 5 rocks. Requires Rocksanity.'),
+        ('collect-5-rocks', 'Collect 5 Rocks', false,
+         'Specific objective: collect all 5 rocks. Requires Rocksanity.'),
+      ]),
+      ('Fragment collection (Bucket Fragments mode required)', [
+        ('collect-fragments-20', 'Collect 10 of 20 Fragments', false,
+         'Specific objective: collect 10 fragments out of a 20-fragment pool. Requires Bucket Fragments mode.'),
+        ('collect-fragments-30', 'Collect 10 of 30 Fragments', false,
+         'Specific objective: collect 10 fragments out of a 30-fragment pool. Requires Bucket Fragments mode.'),
+      ]),
+    ] %}
+    {% for group_label, rows in _groups %}
+    <h3 class="random-pool-group">{{ group_label }}</h3>
     <div class="random-pool-grid">
-      {% set _categories = [
-        ('quest-gated',   'Gated Quest',     'Pulls from gated quest objectives (story-driven content the rando placed behind a key-item gate).'),
-        ('quest-late',    'Hard Quest',      'Pulls from late-game quests (typically high-difficulty endgame content).'),
-        ('quest-go',      'Go Mode Quest',   'Pulls from quests in go-mode dungeons (the path to Lavos for the seed).'),
-        ('recruit',       'Gated Recruit',   'Pulls from character-recruit objectives (recruit X from gated location).'),
-        ('boss-any',      'Any Boss',        'Pulls from any boss across the world, including go-mode dungeons.'),
-        ('boss-go',       'Go Mode Boss',    'Pulls from bosses inside go-mode dungeons only.'),
-        ('boss-nogo',     'Non-Go Boss',     'Pulls from bosses outside go-mode dungeons.'),
-      ] %}
-      {% for suffix, label, tip in _categories %}
+      {% for suffix, label, enabled, tip in rows %}
       <div class="random-pool-row">
         <label class="toggle">
-          <input type="checkbox" name="true-random-{{ suffix }}-enabled" value="1" checked>
+          <input type="checkbox" name="true-random-{{ suffix }}-enabled" value="1"{% if enabled %} checked{% endif %}>
           <span class="switch" aria-hidden="true">
             <span class="switch-thumb"></span>
           </span>
@@ -498,6 +540,7 @@
       </div>
       {% endfor %}
     </div>
+    {% endfor %}
   </div>
 
   {# ------------- Cosmetic ------------- #}

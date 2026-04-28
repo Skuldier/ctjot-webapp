@@ -535,20 +535,43 @@ _MULTIWORLD_FLAGS = [
 # at emit time, options.html iterates it for tab rendering.
 TRUE_RANDOM_CATEGORIES: tuple[tuple[str, str, str, bool, int, str], ...] = (
     # (form-suffix, label, cjot-type, default-enabled, default-weight, tip)
+    # --- Quest categories (random-pull) ---
     ("quest-gated",   "Gated Quest",      "quest_gated",   True,  10,
      "Pulls from gated quest objectives (story-driven content the rando placed behind a key-item gate)."),
     ("quest-late",    "Hard Quest",       "quest_late",    True,  10,
      "Pulls from late-game quests (typically high-difficulty endgame content)."),
     ("quest-go",      "Go Mode Quest",    "quest_go",      True,  10,
      "Pulls from quests in go-mode dungeons (the path to Lavos for the seed)."),
+    # --- Recruit categories ---
     ("recruit",       "Gated Recruit",    "recruit_gated", True,  10,
      "Pulls from character-recruit objectives (recruit X from gated location)."),
+    ("recruit-3",     "Recruit 3 Characters (Total 5)",  "recruit_3", False, 10,
+     "Specific objective: recruit 3 of the gated characters (total party of 5)."),
+    ("recruit-4",     "Recruit 4 Characters (Total 6)",  "recruit_4", False, 10,
+     "Specific objective: recruit 4 of the gated characters (total party of 6)."),
+    ("recruit-5",     "Recruit 5 Characters (Total 7)",  "recruit_5", False, 10,
+     "Specific objective: recruit all 5 gated characters (total party of 7)."),
+    # --- Boss categories (random-pull) ---
     ("boss-any",      "Any Boss",         "boss_any",      True,  10,
      "Pulls from any boss across the world, including go-mode dungeons."),
     ("boss-go",       "Go Mode Boss",     "boss_go",       True,  10,
      "Pulls from bosses inside go-mode dungeons only."),
     ("boss-nogo",     "Non-Go Boss",      "boss_nogo",     True,  10,
      "Pulls from bosses outside go-mode dungeons."),
+    # --- Rock collection (specific) ---
+    # Rocksanity must be enabled in the seed for these to be meaningful.
+    ("collect-3-rocks", "Collect 3 Rocks", "collect_3_rocks", False, 10,
+     "Specific objective: collect any 3 of the 5 rocks. Requires Rocksanity for the rocks to be findable."),
+    ("collect-4-rocks", "Collect 4 Rocks", "collect_4_rocks", False, 10,
+     "Specific objective: collect any 4 of the 5 rocks. Requires Rocksanity."),
+    ("collect-5-rocks", "Collect 5 Rocks", "collect_5_rocks", False, 10,
+     "Specific objective: collect all 5 rocks. Requires Rocksanity."),
+    # --- Fragment collection (specific) ---
+    # Bucket Fragments mode must be configured for these to be meaningful.
+    ("collect-fragments-20", "Collect 10 of 20 Fragments", "collect_10_fragments_20", False, 10,
+     "Specific objective: collect 10 fragments out of a 20-fragment pool. Requires Bucket Fragments mode."),
+    ("collect-fragments-30", "Collect 10 of 30 Fragments", "collect_10_fragments_30", False, 10,
+     "Specific objective: collect 10 fragments out of a 30-fragment pool. Requires Bucket Fragments mode."),
 )
 
 
