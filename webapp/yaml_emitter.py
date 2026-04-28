@@ -80,6 +80,41 @@ def _load_location_data() -> dict[str, int]:
     return _load_apworld_json("location_data.json")
 
 
+# --- True Random resolution ---
+
+# Fallback when the user disables every Random Pool category. Mirrors
+# cjot-beta's built-in "Random" alias so we never emit an empty hint.
+_TRUE_RANDOM_FALLBACK = "65:quest_gated, 30:boss_nogo, 15:recruit_gated"
+
+
+def _resolve_true_random_pool(values: dict[str, Any]) -> str:
+    """Build a cjot-beta weighted-hint string from the Random Pool tab.
+
+    Reads the 7 categories defined in flags.TRUE_RANDOM_CATEGORIES.
+    For each, if the user enabled it AND its weight is > 0, include
+    "{weight}:{cjot_type}" in the comma-joined output. If no category
+    is enabled, fall back to cjot-beta's default Random distribution.
+
+    cjot-beta normalizes the weights, so they don't need to sum to 100.
+    """
+    from . import flags as _flags
+
+    parts: list[str] = []
+    for suffix, _label, ctype, _enabled_default, _weight_default, _tip in \
+            _flags.TRUE_RANDOM_CATEGORIES:
+        enabled = bool(values.get(f"true-random-{suffix}-enabled"))
+        if not enabled:
+            continue
+        try:
+            weight = int(values.get(f"true-random-{suffix}-weight") or 0)
+        except (TypeError, ValueError):
+            weight = 0
+        if weight <= 0:
+            continue
+        parts.append(f"{weight}:{ctype}")
+    return ", ".join(parts) if parts else _TRUE_RANDOM_FALLBACK
+
+
 # --- name maps ---
 
 # Map beta game-mode CLI values to the apworld's game_mode strings.
@@ -358,12 +393,21 @@ def build_yaml(values: dict[str, Any]) -> str:
     bucket_fragments_on = not bucket_list_on and game_mode_raw != "lw"
 
     # Collect bucket objective free-text lines.
+    #
+    # Special handling for "True Random": resolve to a weighted hint
+    # string assembled from the Random Pool tab's enabled categories.
+    # cjot-beta natively parses the resulting "30:quest_gated, ..."
+    # format (see _objective_hint_aliases in objectivehints.py).
+    true_random_str = _resolve_true_random_pool(values)
     objective_hints: list[str] = []
     if bucket_list_on:
         for i in range(1, 9):
             v = (values.get(f"objective-{i}") or "").strip()
-            if v:
-                objective_hints.append(v)
+            if not v:
+                continue
+            if v == "True Random":
+                v = true_random_str
+            objective_hints.append(v)
 
     # --- TextChoice index mapping (matches apworld Options.py) ---
     _ENEMY_DIFF_INDEX = {"normal": 0, "hard": 1}

@@ -94,6 +94,7 @@
     <button type="button" class="tab"        data-tab="Extra"          role="tab">Extra</button>
     <button type="button" class="tab"        data-tab="Mystery"        role="tab">Mystery</button>
     <button type="button" class="tab"        data-tab="Bucket"         role="tab">Bucket</button>
+    <button type="button" class="tab"        data-tab="Random Pool"    role="tab">Random Pool</button>
     <button type="button" class="tab"        data-tab="Cosmetic"       role="tab">Cosmetic</button>
     <button type="button" class="tab"        data-tab="Character Names"role="tab">Character Names</button>
     <button type="button" class="tab"        data-tab="Local"          role="tab">Multiworld</button>
@@ -401,6 +402,7 @@
       <input type="number" min="1" max="8" value="5" data-mirror="num-required">
     </div>
     {% set objective_presets = [
+      'True Random',
       'Random','Random Gated Quest','Random Hard Quest','Random Go Mode Quest',
       'Random Gated Character Recruit','Random Boss (Includes Go Mode Dungeons)',
       'Random Boss from Go Mode Dungeon','Random Boss (No Go Mode Dungeons)',
@@ -449,6 +451,52 @@
           tip='Lavos and Zeal stop counting as game-end conditions: only the bucket goal can complete the seed. Forces bucket-only routing.') }}
       {{ toggle('objectives-auto-win',   'Objectives Auto-Win',
           tip='Completing the required number of objectives ends the game immediately, instead of unlocking the End-of-Time bucket portal.') }}
+    </div>
+  </div>
+
+  {# ------------- Random Pool ------------- #}
+  <div class="tab-panel" data-panel="Random Pool">
+    <p class="tab-info">
+      Configure the <strong>True Random</strong> pool for bucket-list objectives.
+      cjot-beta's built-in <em>Random</em> is fixed at 65% gated quest /
+      30% non-go boss / 15% recruit &mdash; this tab lets you customize that
+      mix. When you pick <em>True Random</em> in any bucket-list objective slot,
+      the YAML emitter draws from these enabled categories using the weights
+      you set. Disabled categories are excluded entirely.
+    </p>
+    <p class="tab-info">
+      Weights don't need to sum to 100; cjot-beta normalizes them.
+      Default is equal weight (10) across all 7 categories.
+    </p>
+    <div class="random-pool-grid">
+      {% set _categories = [
+        ('quest-gated',   'Gated Quest',     'Pulls from gated quest objectives (story-driven content the rando placed behind a key-item gate).'),
+        ('quest-late',    'Hard Quest',      'Pulls from late-game quests (typically high-difficulty endgame content).'),
+        ('quest-go',      'Go Mode Quest',   'Pulls from quests in go-mode dungeons (the path to Lavos for the seed).'),
+        ('recruit',       'Gated Recruit',   'Pulls from character-recruit objectives (recruit X from gated location).'),
+        ('boss-any',      'Any Boss',        'Pulls from any boss across the world, including go-mode dungeons.'),
+        ('boss-go',       'Go Mode Boss',    'Pulls from bosses inside go-mode dungeons only.'),
+        ('boss-nogo',     'Non-Go Boss',     'Pulls from bosses outside go-mode dungeons.'),
+      ] %}
+      {% for suffix, label, tip in _categories %}
+      <div class="random-pool-row">
+        <label class="toggle">
+          <input type="checkbox" name="true-random-{{ suffix }}-enabled" value="1" checked>
+          <span class="switch" aria-hidden="true">
+            <span class="switch-thumb"></span>
+          </span>
+          <span class="toggle-text">{{ label }}</span>
+          <span class="tip-icon" data-tip="{{ tip }}" aria-label="info">?</span>
+        </label>
+        <div class="random-pool-weight">
+          <input type="range" min="1" max="100" value="10"
+                 name="true-random-{{ suffix }}-weight"
+                 id="true-random-{{ suffix }}-weight">
+          <input type="number" min="1" max="100" value="10"
+                 data-mirror="true-random-{{ suffix }}-weight">
+        </div>
+      </div>
+      {% endfor %}
     </div>
   </div>
 

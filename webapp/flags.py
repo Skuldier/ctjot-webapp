@@ -523,6 +523,60 @@ _MULTIWORLD_FLAGS = [
 ]
 
 
+# --- True Random pool (configurable weighted-random objective) ---
+#
+# When the user picks "True Random" in any bucket-list slot, the YAML
+# emitter resolves it to a weighted hint string (e.g.
+# "30:quest_gated, 25:boss_any, 45:recruit_gated") built from these
+# enabled-and-weighted categories. cjot-beta natively parses this format
+# (see _objective_hint_aliases in objectivehints.py).
+#
+# Public constant -- yaml_emitter.py reads it to resolve "True Random"
+# at emit time, options.html iterates it for tab rendering.
+TRUE_RANDOM_CATEGORIES: tuple[tuple[str, str, str, bool, int, str], ...] = (
+    # (form-suffix, label, cjot-type, default-enabled, default-weight, tip)
+    ("quest-gated",   "Gated Quest",      "quest_gated",   True,  10,
+     "Pulls from gated quest objectives (story-driven content the rando placed behind a key-item gate)."),
+    ("quest-late",    "Hard Quest",       "quest_late",    True,  10,
+     "Pulls from late-game quests (typically high-difficulty endgame content)."),
+    ("quest-go",      "Go Mode Quest",    "quest_go",      True,  10,
+     "Pulls from quests in go-mode dungeons (the path to Lavos for the seed)."),
+    ("recruit",       "Gated Recruit",    "recruit_gated", True,  10,
+     "Pulls from character-recruit objectives (recruit X from gated location)."),
+    ("boss-any",      "Any Boss",         "boss_any",      True,  10,
+     "Pulls from any boss across the world, including go-mode dungeons."),
+    ("boss-go",       "Go Mode Boss",     "boss_go",       True,  10,
+     "Pulls from bosses inside go-mode dungeons only."),
+    ("boss-nogo",     "Non-Go Boss",      "boss_nogo",     True,  10,
+     "Pulls from bosses outside go-mode dungeons."),
+)
+
+
+def _build_true_random_flags() -> list[FlagDef]:
+    out: list[FlagDef] = []
+    for suffix, label, _ctype, enabled_default, weight_default, _tip in TRUE_RANDOM_CATEGORIES:
+        out.append(FlagDef(
+            name=f"true-random-{suffix}-enabled",
+            input_type="checkbox",
+            label=f"Enable {label}",
+            section="Random Pool",
+            default=enabled_default,
+        ))
+        out.append(FlagDef(
+            name=f"true-random-{suffix}-weight",
+            input_type="number",
+            label=f"{label} weight",
+            section="Random Pool",
+            default=weight_default,
+            min_value=1,
+            max_value=100,
+        ))
+    return out
+
+
+_TRUE_RANDOM_FLAGS = _build_true_random_flags()
+
+
 ALL_FLAGS: tuple[FlagDef, ...] = tuple(
     [GAME_MODE, ENEMY_DIFFICULTY, ITEM_DIFFICULTY, TECH_RANDO, SHOP_PRICES]
     + _BASIC_FLAGS
@@ -535,6 +589,7 @@ ALL_FLAGS: tuple[FlagDef, ...] = tuple(
     + _LOGIC_TWEAK_FLAGS
     + _BUCKET_FLAGS
     + _BUCKET_OBJECTIVE_FLAGS
+    + _TRUE_RANDOM_FLAGS
     + _COSMETIC_FLAGS
     + _CHAR_NAME_FLAGS
     + _MYSTERY_FLAGS
@@ -555,6 +610,7 @@ SECTIONS: tuple[str, ...] = (
     "Extra",
     "Logic Tweaks",
     "Bucket",
+    "Random Pool",
     "Cosmetic",
     "Character Names",
     "Mystery",
