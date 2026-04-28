@@ -402,7 +402,7 @@
       <input type="number" min="1" max="8" value="5" data-mirror="num-required">
     </div>
     {% set objective_presets = [
-      'True Random',
+      'Random (Custom)',
       'Random','Random Gated Quest','Random Hard Quest','Random Go Mode Quest',
       'Random Gated Character Recruit','Random Boss (Includes Go Mode Dungeons)',
       'Random Boss from Go Mode Dungeon','Random Boss (No Go Mode Dungeons)',
@@ -457,16 +457,19 @@
   {# ------------- Random Pool ------------- #}
   <div class="tab-panel" data-panel="Random Pool">
     <p class="tab-info">
-      Configure the <strong>True Random</strong> pool for bucket-list objectives.
+      Configure the <strong>Random (Custom)</strong> pool for bucket-list objectives.
       cjot-beta's built-in <em>Random</em> is fixed at 65% gated quest /
       30% non-go boss / 15% recruit &mdash; this tab lets you customize that
-      mix. When you pick <em>True Random</em> in any bucket-list objective slot,
+      mix. When you pick <em>Random (Custom)</em> in any bucket-list objective slot,
       the YAML emitter draws from these enabled categories using the weights
       you set. Disabled categories are excluded entirely.
     </p>
     <p class="tab-info">
       Weights don't need to sum to 100; cjot-beta normalizes them.
-      Default is equal weight (10) across all 7 categories.
+      Default is equal weight (10) across the random-pull quest, recruit,
+      and boss categories. Specific objectives (rocks, fragments,
+      recruit-N) are off by default &mdash; opt in when your seed
+      configuration supports them.
     </p>
     {#
       Each row: (form-suffix, label, default-enabled, tip)
@@ -477,6 +480,8 @@
     #}
     {% set _groups = [
       ('Quest categories (random-pull)', [
+        ('quest-free',    'Sphere 1 Quest',  true,
+         "Pulls from sphere-1 / non-gated quests (Cathedral, Heckran's Cave, Denadoro, Zenan Bridge) -- no key-item gate required."),
         ('quest-gated',   'Gated Quest',     true,
          'Pulls from gated quest objectives (story-driven content the rando placed behind a key-item gate).'),
         ('quest-late',    'Hard Quest',      true,

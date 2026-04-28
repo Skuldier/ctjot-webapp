@@ -536,6 +536,8 @@ _MULTIWORLD_FLAGS = [
 TRUE_RANDOM_CATEGORIES: tuple[tuple[str, str, str, bool, int, str], ...] = (
     # (form-suffix, label, cjot-type, default-enabled, default-weight, tip)
     # --- Quest categories (random-pull) ---
+    ("quest-free",    "Sphere 1 Quest",   "quest_free",    True,  10,
+     "Pulls from sphere-1 / non-gated quests (Cathedral, Heckran's Cave, Denadoro, Zenan Bridge) -- no key-item gate required."),
     ("quest-gated",   "Gated Quest",      "quest_gated",   True,  10,
      "Pulls from gated quest objectives (story-driven content the rando placed behind a key-item gate)."),
     ("quest-late",    "Hard Quest",       "quest_late",    True,  10,

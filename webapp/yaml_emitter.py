@@ -394,19 +394,19 @@ def build_yaml(values: dict[str, Any]) -> str:
 
     # Collect bucket objective free-text lines.
     #
-    # Special handling for "True Random": resolve to a weighted hint
+    # Special handling for "Random (Custom)": resolve to a weighted hint
     # string assembled from the Random Pool tab's enabled categories.
     # cjot-beta natively parses the resulting "30:quest_gated, ..."
     # format (see _objective_hint_aliases in objectivehints.py).
-    true_random_str = _resolve_true_random_pool(values)
+    custom_random_str = _resolve_true_random_pool(values)
     objective_hints: list[str] = []
     if bucket_list_on:
         for i in range(1, 9):
             v = (values.get(f"objective-{i}") or "").strip()
             if not v:
                 continue
-            if v == "True Random":
-                v = true_random_str
+            if v == "Random (Custom)":
+                v = custom_random_str
             objective_hints.append(v)
 
     # --- TextChoice index mapping (matches apworld Options.py) ---
