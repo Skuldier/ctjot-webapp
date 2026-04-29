@@ -72,42 +72,60 @@
     });
   })();
 
-  // ---------- Character rando chain: dup-chars -> char-rando -> unlocked-magic ----------
-  // Two cjot-beta behaviors layered into one cascade:
-  //   1. forced_on map (randosettings.py:176): DUPLICATE_CHARS forces
+  // ---------- Character rando chain: dual-techs -> dup-chars -> char-rando -> unlocked-magic ----------
+  // Three cjot-beta behaviors layered into one cascade:
+  //   1. forced_on map (randosettings.py:177): DUPLICATE_TECHS forces
+  //      CHAR_RANDO + DUPLICATE_CHARS on -- duplicate dual techs only
+  //      make sense when characters can be duplicated.
+  //   2. forced_on map (randosettings.py:176): DUPLICATE_CHARS forces
   //      CHAR_RANDO on -- duplicate characters require char rando to
   //      reassign slots.
-  //   2. cr_telepod_exhibit.flux (randomizer.py:1100): when CHAR_RANDO
+  //   3. cr_telepod_exhibit.flux (randomizer.py:1100): when CHAR_RANDO
   //      is on, the Telepod Exhibit script pre-unlocks Spekkio's magic
   //      flags at game start, so unlocked_magic is *effectively* on
   //      regardless of the user's setting. We mirror this in the UI
   //      so the form value matches the in-game reality.
   // All relationships are one-way force-on (like rocksanity->skyways):
-  //   - Toggling dup-chars on -> char-rando on -> unlocked-magic on
-  //   - Toggling dup-chars off does NOT turn off char-rando or magic
-  //   - Toggling char-rando off (with dup off) does NOT turn off magic
-  //     (user might want magic unlocked independently)
+  //   - Toggling dual-techs on -> dup-chars on -> rando on -> magic on
+  //   - Toggling dup-chars on -> rando on -> magic on
+  //   - Toggling rando on -> magic on
+  //   - Disabling a parent does NOT disable children (user can keep
+  //     rando + magic without dup-chars, etc.)
   //   - Trying to uncheck a forced-on flag silently re-checks it.
   (function linkCharRandoChain() {
+    const dualtech = document.querySelector('input[name="duplicate-dual-techs"]');
     const dup = document.querySelector('input[name="duplicate-characters"]');
     const rando = document.querySelector('input[name="randomize-characters"]');
     const magic = document.querySelector('input[name="unlocked-magic"]');
     if (!dup || !rando || !magic) return;
+    if (dualtech) {
+      dualtech.addEventListener("change", () => {
+        if (dualtech.checked) {
+          // Cascade: enabling dual-techs forces dup-chars, rando, AND magic on.
+          if (!dup.checked) dup.checked = true;
+          if (!rando.checked) rando.checked = true;
+          if (!magic.checked) magic.checked = true;
+        }
+      });
+    }
     dup.addEventListener("change", () => {
       if (dup.checked) {
         // Cascade: enabling dup-chars forces both rando AND magic on.
         if (!rando.checked) rando.checked = true;
         if (!magic.checked) magic.checked = true;
+      } else if (dualtech && dualtech.checked) {
+        // Can't uncheck dup-chars while dual-techs is on.
+        dup.checked = true;
       }
     });
     rando.addEventListener("change", () => {
       // Force magic on when rando is checked.
       if (rando.checked && !magic.checked) magic.checked = true;
-      // Can't uncheck rando while dup-chars is on.
+      // Can't uncheck rando while dup-chars (or transitively dual-techs) is on.
       if (!rando.checked && dup.checked) rando.checked = true;
     });
     magic.addEventListener("change", () => {
-      // Can't uncheck magic while rando (or transitively dup-chars) is on.
+      // Can't uncheck magic while rando (or transitively dup-chars / dual-techs) is on.
       if (!magic.checked && rando.checked) magic.checked = true;
     });
   })();
