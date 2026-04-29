@@ -52,6 +52,26 @@
     });
   })();
 
+  // ---------- Rocksanity forces Unlocked Skyways on ----------
+  // cjot-beta's forced_on map (randosettings.py:175) silently forces
+  // UNLOCKED_SKYGATES on whenever ROCKSANITY is set, since the rocks
+  // need skyway access to be reachable. One-way relationship: turning
+  // rocksanity off does NOT turn skyways off (user can keep skyways
+  // independently). And toggling skyways off while rocksanity is on
+  // is meaningless -- cjot-beta would force it back on -- so we
+  // silently re-check it to keep the form consistent.
+  (function linkRocksanitySkyways() {
+    const rocks = document.querySelector('input[name="rocksanity"]');
+    const sky = document.querySelector('input[name="unlocked-skyways"]');
+    if (!rocks || !sky) return;
+    rocks.addEventListener("change", () => {
+      if (rocks.checked && !sky.checked) sky.checked = true;
+    });
+    sky.addEventListener("change", () => {
+      if (!sky.checked && rocks.checked) sky.checked = true;
+    });
+  })();
+
   // ---------- Tab min/max: keep min <= max within each pair ----------
   // The randomizer interprets reversed min/max as "min wins" and silently
   // truncates max, so a min=5 / max=2 pair becomes min=5 / max=5. Mirror
