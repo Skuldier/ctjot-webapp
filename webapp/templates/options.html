@@ -466,7 +466,7 @@
     </p>
     <p class="tab-info">
       Weights don't need to sum to 100; cjot-beta normalizes them.
-      Default is equal weight (10) across the random-pull quest, recruit,
+      Default is equal weight (50) across the random-pull quest, recruit,
       and boss categories. Specific objectives (rocks, fragments,
       recruit-N) are off by default &mdash; opt in when your seed
       configuration supports them.
@@ -536,10 +536,10 @@
           <span class="tip-icon" data-tip="{{ tip }}" aria-label="info">?</span>
         </label>
         <div class="random-pool-weight">
-          <input type="range" min="1" max="100" value="10"
+          <input type="range" min="1" max="100" value="50"
                  name="true-random-{{ suffix }}-weight"
                  id="true-random-{{ suffix }}-weight">
-          <input type="number" min="1" max="100" value="10"
+          <input type="number" min="1" max="100" value="50"
                  data-mirror="true-random-{{ suffix }}-weight">
         </div>
       </div>
