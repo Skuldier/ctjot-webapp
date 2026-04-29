@@ -375,10 +375,51 @@ def build_yaml(values: dict[str, Any]) -> str:
     for cl in char_locations:
         rules[cl["name"]] = _CHAR_ACCESS.get(cl["name"], [[]])
 
-    # Aggregate all KI-eligible location names so we can trim yaml_items.
+    # Items vs locations balance: when items > locations, AP fill errors
+    # with "no more spots to place items" -- it doesn't silently drop. We
+    # need to trim the item pool to match the location count BEFORE
+    # emitting the YAML.
+    #
+    # Naive trim ("yaml_items[:total_ki_locs]") drops items from the END
+    # of the list, which removes flag-conditional KIs (Bike Key, Race
+    # Log) that are required by access rules. That breaks flag-gated
+    # locations -- e.g. Lab 32 Race needs Bike Key, but the naive trim
+    # dropped it, leaving the location unreachable.
+    #
+    # Smart trim: identify items REFERENCED by any access rule (those
+    # are gate items the fill MUST be able to place); never trim those.
+    # Trim filler-eligible items (those not in any rule) from the end
+    # until items <= locations.
+    #
+    # The opposite case (items < locations) is handled by the apworld's
+    # v1.4.7 top-up in create_items, which appends junk-fill items to
+    # match yaml location count.
     total_ki_locs = sum(len(v) for v in region_list.values())
     if len(yaml_items) > total_ki_locs:
-        yaml_items = yaml_items[:total_ki_locs]
+        # Build the set of item-IDs that any access rule references.
+        rule_item_names: set[str] = set()
+        for rule_alts in rules.values():
+            for alt in rule_alts:
+                rule_item_names.update(alt)
+        rule_item_ids = {
+            item_data[name] for name in rule_item_names if name in item_data
+        }
+        # Keep all rule-required items; trim non-required from the end.
+        excess = len(yaml_items) - total_ki_locs
+        new_items = list(yaml_items)
+        # Walk from the end, removing non-required entries until we've
+        # dropped `excess` of them. If we run out of non-required items
+        # and still have excess, we fall through with items > locations
+        # and fill will error -- but that means the user's access rules
+        # genuinely require more items than they have locations for,
+        # which is a YAML configuration problem we can't paper over.
+        idx = len(new_items) - 1
+        while excess > 0 and idx >= 0:
+            if new_items[idx]["id"] not in rule_item_ids:
+                del new_items[idx]
+                excess -= 1
+            idx -= 1
+        yaml_items = new_items
 
     # Victory: require C. Trigger. This is a pragmatic single-item win
     # condition that avoids the brittle "collect every KI" rule and works
