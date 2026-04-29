@@ -72,6 +72,46 @@
     });
   })();
 
+  // ---------- Character rando chain: dup-chars -> char-rando -> unlocked-magic ----------
+  // Two cjot-beta behaviors layered into one cascade:
+  //   1. forced_on map (randosettings.py:176): DUPLICATE_CHARS forces
+  //      CHAR_RANDO on -- duplicate characters require char rando to
+  //      reassign slots.
+  //   2. cr_telepod_exhibit.flux (randomizer.py:1100): when CHAR_RANDO
+  //      is on, the Telepod Exhibit script pre-unlocks Spekkio's magic
+  //      flags at game start, so unlocked_magic is *effectively* on
+  //      regardless of the user's setting. We mirror this in the UI
+  //      so the form value matches the in-game reality.
+  // All relationships are one-way force-on (like rocksanity->skyways):
+  //   - Toggling dup-chars on -> char-rando on -> unlocked-magic on
+  //   - Toggling dup-chars off does NOT turn off char-rando or magic
+  //   - Toggling char-rando off (with dup off) does NOT turn off magic
+  //     (user might want magic unlocked independently)
+  //   - Trying to uncheck a forced-on flag silently re-checks it.
+  (function linkCharRandoChain() {
+    const dup = document.querySelector('input[name="duplicate-characters"]');
+    const rando = document.querySelector('input[name="randomize-characters"]');
+    const magic = document.querySelector('input[name="unlocked-magic"]');
+    if (!dup || !rando || !magic) return;
+    dup.addEventListener("change", () => {
+      if (dup.checked) {
+        // Cascade: enabling dup-chars forces both rando AND magic on.
+        if (!rando.checked) rando.checked = true;
+        if (!magic.checked) magic.checked = true;
+      }
+    });
+    rando.addEventListener("change", () => {
+      // Force magic on when rando is checked.
+      if (rando.checked && !magic.checked) magic.checked = true;
+      // Can't uncheck rando while dup-chars is on.
+      if (!rando.checked && dup.checked) rando.checked = true;
+    });
+    magic.addEventListener("change", () => {
+      // Can't uncheck magic while rando (or transitively dup-chars) is on.
+      if (!magic.checked && rando.checked) magic.checked = true;
+    });
+  })();
+
   // ---------- Tab min/max: keep min <= max within each pair ----------
   // The randomizer interprets reversed min/max as "min wins" and silently
   // truncates max, so a min=5 / max=2 pair becomes min=5 / max=5. Mirror
