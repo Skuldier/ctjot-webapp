@@ -573,11 +573,13 @@ TRUE_RANDOM_CATEGORIES: tuple[tuple[str, str, str, bool, int, str], ...] = (
     ("collect-5-rocks", "Collect 5 Rocks", "collect_5_rocks", False, 50,
      "Specific objective: collect all 5 rocks. Requires Rocksanity."),
     # --- Fragment collection (specific) ---
-    # Bucket Fragments mode must be configured for these to be meaningful.
+    # cjot-beta auto-generates the fragment pool when a CollectNFragments
+    # objective is part of the bucket_list (bucketlist.py:208-212). The
+    # legacy bucket_fragments mode is NOT required.
     ("collect-fragments-20", "Collect 10 of 20 Fragments", "collect_10_fragments_20", False, 50,
-     "Specific objective: collect 10 fragments out of a 20-fragment pool. Requires Bucket Fragments mode."),
+     "Specific objective: collect 10 fragments out of a 20-fragment pool. cjot-beta auto-generates the fragments when this objective is selected -- works in any bucket_list seed regardless of the bucket_fragments toggle."),
     ("collect-fragments-30", "Collect 10 of 30 Fragments", "collect_10_fragments_30", False, 50,
-     "Specific objective: collect 10 fragments out of a 30-fragment pool. Requires Bucket Fragments mode."),
+     "Specific objective: collect 10 fragments out of a 30-fragment pool. cjot-beta auto-generates the fragments when this objective is selected -- works in any bucket_list seed regardless of the bucket_fragments toggle."),
 )
 
 
