@@ -203,6 +203,9 @@ _QOL_FLAGS = [
     FlagDef("ap-classification-markers", "checkbox",
             "AP Classification Markers (red trap / purple prog / blue useful / brown filler)",
             "Quality of Life", default=True, cli_arg=None),
+    FlagDef("item-arrival-textbox", "checkbox",
+            "Item Arrival Textbox",
+            "Quality of Life", default=False, cli_arg=None),
 ]
 
 

@@ -597,6 +597,7 @@ def build_yaml(values: dict[str, Any]) -> str:
         "free_menu_glitch":       _bool("free-menu-glitch"),
         "visible_techlist":       _bool("visible-techlist"),
         "ap_classification_markers": _bool("ap-classification-markers"),
+        "item_arrival_textbox":      _bool("item-arrival-textbox"),
         # --- Extra ---
         "starters_sufficient":    _bool("starters-sufficient"),
         "tech_damage_rando":      _bool("tech-damage-rando"),
