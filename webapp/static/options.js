@@ -318,45 +318,21 @@
     document.querySelectorAll('input[type="range"]').forEach((r) => r.dispatchEvent(new Event("input")));
   }
 
-  // Apply a preset: reset first, then set the preset's values
+  // Apply a preset: reset first, then set the preset's values.
+  // Each preset only sets game_mode + the magic flag forced on by that
+  // mode in cjot-beta's forced_on table (randosettings.py:178-180):
+  // LW / IA / LOC all force UNLOCKED_MAGIC.
   const PRESETS = {
-    gato: () => {
-      setSelect("game-mode", "std");
-      setSelect("item-difficulty", "easy");
-      setCheckbox("unlocked-magic", true);
-      setCheckbox("free-menu-glitch", true);
-      setCheckbox("fast-tabs", true);
-      setCheckbox("disable-glitches", true);
-    },
-    prix: () => {
-      setSelect("game-mode", "std");
-      setSelect("item-difficulty", "normal");
-      setCheckbox("unlocked-magic", false);
-      setCheckbox("chronosanity", true);
-      setCheckbox("fast-tabs", true);
-    },
-    jurassic: () => {
-      setSelect("game-mode", "std");
-      setSelect("item-difficulty", "normal");
-      setCheckbox("unlocked-magic", false);
-      setCheckbox("randomize-gear", true);
-      setCheckbox("randomize-healing", true);
-    },
-    catalack: () => {
-      setSelect("game-mode", "std");
-      setSelect("item-difficulty", "hard");
-      setCheckbox("randomize-gear", true);
-      setCheckbox("randomize-healing", true);
-      setCheckbox("unlocked-magic", false);
-    },
     lw: () => {
       setSelect("game-mode", "lw");
-      setSelect("item-difficulty", "normal");
+      setCheckbox("unlocked-magic", true);
+    },
+    ia: () => {
+      setSelect("game-mode", "ia");
       setCheckbox("unlocked-magic", true);
     },
     loc: () => {
       setSelect("game-mode", "loc");
-      setSelect("item-difficulty", "normal");
       setCheckbox("unlocked-magic", true);
     },
   };
