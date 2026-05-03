@@ -309,11 +309,17 @@ main { max-width: 1080px; margin: 1rem auto 3rem; padding: 0 1rem; }
 .subsection { margin-top: 0.4rem; }
 
 /* Toggles disabled by the current game mode (mirrors cjot-beta's
-   ForcedFlags). Greyed out so the user can see they're unavailable. */
+   ForcedFlags). Greyed out so the user can see they're unavailable
+   for the selected mode (LW/IA/LoC/Vanilla Rando). */
 .toggle-disabled {
-  opacity: 0.45;
+  opacity: 0.3;
+  filter: grayscale(100%);
   pointer-events: none;
   cursor: not-allowed;
+}
+/* Strikethrough the label text to make "unavailable" extra obvious. */
+.toggle-disabled .toggle-text {
+  text-decoration: line-through;
 }
 
 /* ------- Hover tooltips ------- */
