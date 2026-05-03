@@ -285,7 +285,14 @@
   }
   function setSelect(name, value) {
     const el = document.querySelector(`select[name="${name}"]`);
-    if (el) el.value = value;
+    if (!el) return;
+    el.value = value;
+    // Dispatch the "change" event so any listeners (e.g.
+    // linkGameModeForcedOff) react to the programmatic update the same
+    // way they would to a real user interaction. Without this, clicking
+    // a preset that switched game-mode wouldn't auto-disable the
+    // mode-incompatible toggles.
+    el.dispatchEvent(new Event("change", { bubbles: true }));
   }
   function setText(name, value) {
     const el = document.querySelector(`input[name="${name}"]`);

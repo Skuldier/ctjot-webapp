@@ -161,6 +161,35 @@ _FLAG_CONDITIONAL_KIS = (
     ("add-race-log-spot",    "Race Log"),
 )
 
+# Per-mode flags that cjot-beta silently forces OFF at generation time
+# (mirrors randosettings.py:148 forced_off table). The webapp UI also
+# disables these toggles when their gating mode is selected (see
+# linkGameModeForcedOff in static/options.js), but we re-apply the
+# clamp here as defense in depth: if a hand-edited form payload or
+# a stale browser session smuggles in a forced-off flag, we strip it
+# before it reaches the YAML's region_list / items / flag sections.
+# Without this, an AP location like "Bekklers Lab" could exist in
+# region_list while cjot-beta drops the matching quest at apply time,
+# creating an unreachable AP location (potential softlock).
+_MODE_FORCED_OFF: dict[str, set[str]] = {
+    "lw":  {"boss-scaling", "bucket-list", "epoch-fail",
+            "add-bekkler-spot", "add-cyrus-grave-spot",
+            "add-ozzie-fort-spot", "add-race-log-spot",
+            "add-sun-keep-spot", "restore-johnny-race",
+            "split-arris-dome", "restore-tools",
+            "unlocked-skyways", "vanilla-desert",
+            "vanilla-robo-ribbon", "rocksanity",
+            "remove-black-omen-spot"},
+    "ia":  {"zeal-2-last", "boss-scaling", "bucket-list",
+            "add-bekkler-spot"},
+    "loc": {"zeal-2-last", "bucket-list", "boss-scaling",
+            "add-ozzie-fort-spot", "add-sun-keep-spot",
+            "restore-tools", "restore-johnny-race",
+            "split-arris-dome", "add-race-log-spot",
+            "add-bekkler-spot"},
+    "van": {"boss-scaling"},
+}
+
 _ROCK_ITEMS = (
     "Black Rock", "Blue Rock", "SilverRock", "White Rock", "Gold Rock",
 )
@@ -313,13 +342,29 @@ def build_yaml(values: dict[str, Any]) -> str:
     game_mode = _GAME_MODE_DISPLAY.get(game_mode_raw, "Standard")
     item_difficulty = _ITEM_DIFFICULTY_DISPLAY.get(item_diff_raw, "Normal")
 
+    # Compute the forced-off set NOW so it can clamp items + region_list
+    # in addition to the flag-section emission later. Without clamping
+    # here, a form payload with both game_mode=lw AND add_bekkler_spot=1
+    # would emit a YAML where the flag is dropped (correct) but the
+    # "Bekklers Lab" location is still in region_list (incorrect) ->
+    # AP creates an unreachable location since cjot-beta drops the quest.
+    _forced_off: set[str] = set(_MODE_FORCED_OFF.get(game_mode_raw, set()))
+    # Chronosanity also forces boss-scaling off (handled in flag section
+    # too but mirrored here for consistency). No region-list impact.
+    if bool(values.get("chronosanity")):
+        _forced_off = _forced_off | {"boss-scaling"}
+
+    def _flag_active(name: str) -> bool:
+        """Form value AND not forced off by current game mode."""
+        return bool(values.get(name)) and name not in _forced_off
+
     # --- Items list (YAML `items` field) ---
     item_data = _load_item_data()
     key_items = list(_CORE_KEY_ITEMS)
     for flag_name, item_name in _FLAG_CONDITIONAL_KIS:
-        if values.get(flag_name):
+        if _flag_active(flag_name):
             key_items.append(item_name)
-    if values.get("rocksanity"):
+    if _flag_active("rocksanity"):
         key_items.extend(_ROCK_ITEMS)
 
     yaml_items: list[dict[str, int]] = []
@@ -345,13 +390,14 @@ def build_yaml(values: dict[str, Any]) -> str:
         _add_region(region_name, access, locs)
 
     for form_flag, region_name, access, loc_name in _FLAG_GATED_REGIONS:
-        if not values.get(form_flag):
+        # _flag_active checks both the form value AND the mode-forced-off
+        # clamp, so e.g. add_bekkler_spot under LW mode is dropped before
+        # it can pollute region_list with an unreachable AP location.
+        if not _flag_active(form_flag):
             continue
-        # Bekkler & Cyrus are VR-exclusive unless the matching experimental
-        # flag is set (which the outer condition already guarantees here).
         _add_region(region_name, access, (loc_name,))
 
-    if values.get("rocksanity"):
+    if _flag_active("rocksanity"):
         for region_name, access, loc_name in _ROCKSANITY_REGIONS:
             _add_region(region_name, access, (loc_name,))
 
@@ -460,31 +506,10 @@ def build_yaml(values: dict[str, Any]) -> str:
     def _bool(name: str) -> int:
         return 1 if values.get(name) else 0
 
-    # cjot-beta's ForcedFlags table (randosettings.py:148) silently
-    # turns these off when the corresponding mode/flag is set. Mirror
-    # the auto-drop here so the YAML reflects what cjot-beta will
-    # actually use, even if a hand-edited form payload set both.
-    _MODE_FORCED_OFF: dict[str, set[str]] = {
-        "lw":  {"boss-scaling", "bucket-list", "epoch-fail",
-                "add-bekkler-spot", "add-cyrus-grave-spot",
-                "add-ozzie-fort-spot", "add-race-log-spot",
-                "add-sun-keep-spot", "restore-johnny-race",
-                "split-arris-dome", "restore-tools",
-                "unlocked-skyways", "vanilla-desert",
-                "vanilla-robo-ribbon", "rocksanity",
-                "remove-black-omen-spot"},
-        "ia":  {"zeal-2-last", "boss-scaling", "bucket-list",
-                "add-bekkler-spot"},
-        "loc": {"zeal-2-last", "bucket-list", "boss-scaling",
-                "add-ozzie-fort-spot", "add-sun-keep-spot",
-                "restore-tools", "restore-johnny-race",
-                "split-arris-dome", "add-race-log-spot",
-                "add-bekkler-spot"},
-        "van": {"boss-scaling"},
-    }
-    _forced_off = _MODE_FORCED_OFF.get(game_mode_raw, set())
-    if _bool("chronosanity"):
-        _forced_off = _forced_off | {"boss-scaling"}
+    # _forced_off was already computed near the top of build_yaml from
+    # the module-level _MODE_FORCED_OFF table; re-using it here so the
+    # flag-section emission via _bool_clamped agrees with the items /
+    # region_list construction earlier.
 
     def _bool_clamped(name: str) -> int:
         if name in _forced_off:
